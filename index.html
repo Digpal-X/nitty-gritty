@@ -75,21 +75,42 @@
         async function translateText() {
             const inputText = document.getElementById("inputText").value;
             const mode = document.getElementById("mode").value;
-            
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer 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"
-                },
-                body: JSON.stringify({
-                    model: "gpt-4",
-                    messages: [{ role: "user", content: `Translate this to Hindi in a ${mode} tone: ${inputText}` }]
-                })
-            });
+            const outputElement = document.getElementById("output");
 
-            const data = await response.json();
-            document.getElementById("output").innerText = data.choices[0].message.content;
+            const url = "https://libretranslate.com/translate";
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        q: inputText,
+                        source: "en",
+                        target: "hi",
+                        format: "text"
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.translatedText) {
+                    let translatedText = data.translatedText;
+                    
+                    if (mode === "casual") {
+                        translatedText += " 🤙";
+                    } else if (mode === "slang") {
+                        translatedText = translatedText.replace("आप", "तू");
+                    }
+                    
+                    outputElement.innerText = translatedText;
+                } else {
+                    throw new Error("Translation failed.");
+                }
+            } catch (error) {
+                outputElement.innerText = `Error: ${error.message}`;
+            }
         }
     </script>
 </body>
